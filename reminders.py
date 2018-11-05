@@ -8,12 +8,41 @@ from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.lang import Builder
+
+from models import Reminder
+
+
+Builder.load_string('''
+<SelectableLabel>:
+    # Draw a background to indicate selection
+    canvas.before:
+        Color:
+            rgba: (.0, 0.9, .1, .3) if self.selected else (0, 0, 0, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            
+    text_size: self.size
+    valign: 'middle'
+    padding_x: 5
+
+<ReminderList>:
+    viewclass: 'SelectableLabel'
+    SelectableRecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+        multiselect: True
+        touch_multiselect: True
+''')
 
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
                                  RecycleBoxLayout):
-    # Adds selection and focus behaviour to the view.
-    pass
+    '''' Adds selection and focus behaviour to the view. '''
 
 
 class SelectableLabel(RecycleDataViewBehavior, Label):
@@ -44,25 +73,35 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
             print("selection removed for {0}".format(rv.data[index]))
 
 
-class ReminderList(RecycleView):
+def get_static():
+    return [
+        Reminder(
+            'reminder {}'.format(x),
+            'reminder {} text'.format(x)
+        ) for x in range(1, 4)
+    ]
 
+
+class ReminderList(RecycleView):
     def __init__(self, **kwargs):
         super(ReminderList, self).__init__(**kwargs)
-        self.data = [{'text': str(x)} for x in [
-            'reminder 1', 'reminder 2', 'reminder 3'
-        ]]
+        self.data = [{'text': x.title + '\n    ' + x.text} for x in get_static()]
 
 
 class RemindersPage(GridLayout):
-
     def __init__(self, **kwargs):
         super(RemindersPage, self).__init__(**kwargs)
         self.rows = 2
         self.add_widget(ReminderList())
+        sub_layout = GridLayout()
+        sub_layout.size_hint = (.1, .1)
+        sub_layout.cols = 2
+        sub_layout.add_widget(Button(text='Add'))
+        sub_layout.add_widget(Button(text='Edit'))
+        self.add_widget(sub_layout)
 
 
 class ReminderApp(App):
-
     def build(self):
         return RemindersPage()
 
