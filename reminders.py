@@ -35,8 +35,6 @@ Builder.load_string('''
         size_hint_y: None
         height: self.minimum_height
         orientation: 'vertical'
-        multiselect: True
-        touch_multiselect: True
 ''')
 
 
